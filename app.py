@@ -21,12 +21,6 @@ from PIL import Image
 
 app = FastAPI()
 
-
-def download_image(url):
-    response = requests.get(url)
-    img = Image.open(BytesIO(response.content))
-    return cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
-
 def compare_images(img1, img2):
     sift = cv2.SIFT_create()
     kp1, des1 = sift.detectAndCompute(img1, None)
@@ -42,36 +36,28 @@ def compare_images(img1, img2):
 
     return len(good_matches)
 
-def are_images_similar(url_list1, url_list2):
+
+def are_images_similar(inp_imgs, pro_urls):
     threshold = 50
-    for url1 in url_list1:
-        img1 = download_image(url1)
-        for url2 in url_list2:
-            img2 = download_image(url2)
+    similar_images = []
+    for img1 in inp_imgs:
+        for url2 in pro_urls:
+            img2 = cv2.imread(url2)
             num_good_matches = compare_images(img1, img2)
             if num_good_matches > threshold:
-                del img1
-                del img2
-                gc.collect()
-                return True
-            del img2
+                similar_images.append((img1, url2))
+                break
             gc.collect()
-        del img1
-        gc.collect()
-    return False
+    return similar_images
+
 
 @app.post('/similarityCheck')
-def profanityCheck(data:Similarity):
-    inpImgs = []
-    proImgs = []
-    
-    for nm in data.inpImg:
-        inpImgs.append(nm)
-    for nm in data.proImg:
-        proImgs.append(nm)
-    
-    result = are_images_similar(inpImgs, proImgs)
-    output_dict = {"similarity": result}
+def similarity_check(data: Similarity):
+    inp_imgs = [cv2.imdecode(np.fromstring(img, np.uint8), cv2.IMREAD_COLOR) for img in data.inpImg]
+    pro_urls = data.proImg
+
+    result = are_images_similar(inp_imgs, pro_urls)
+    output_dict = {"similarity": len(result) > 0, "similar_images": result}
     return JSONResponse(content=output_dict)
 
 
