@@ -1,4 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun May 14 02:11:08 2023
 
+@author: mr.laptop
+"""
 
 # 1. Library imports
 import uvicorn
@@ -55,10 +60,7 @@ def similarity_check(data: Similarity):
     output_dict = {"similarity": len(result) > 0, "similar_images": result}
     return JSONResponse(content=output_dict)
 
-
 # 5. Run the API with uvicorn
 #    Will run on http://127.0.0.1:8000
 if __name__ == '__main__':
-    host = '0.0.0.0'
-    port = int(os.environ.get('PORT', 8000))
-    uvicorn.run(app, host=host, port=port)
+    uvicorn.run(app, host='127.0.0.1', port=8000)
