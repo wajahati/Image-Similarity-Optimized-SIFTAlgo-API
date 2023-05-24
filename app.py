@@ -1,7 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sun May 14 02:11:08 2023
+
+@author: mr.laptop
+"""
+
+# 1. Library imports
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from API import Similarity
+
 
 import cv2
 import numpy as np
@@ -44,6 +53,9 @@ def are_images_similar(url_list1, url_list2):
             num_good_matches = compare_images(img1, img2)
             if num_good_matches > threshold:
                 similar_images.append((url1, url2))
+                del img1
+                del img2
+                gc.collect()
                 return similar_images
             del img2
             gc.collect()
@@ -52,13 +64,16 @@ def are_images_similar(url_list1, url_list2):
     return similar_images
 
 @app.post('/similarityCheck')
-def profanityCheck(data:Similarity):
-    inpImgs = data.inpImg
-    proImgs = data.proImg
-    
-    result = are_images_identical(inpImgs, proImgs)
-    output_dict = {"identical": len(result) > 0, "identical_images": result}
+def similarity_check(data: Similarity):
+    inp_imgs = data.inpImg
+    pro_urls = data.proImg
+
+    result = are_images_similar(inp_imgs, pro_urls)
+    output_dict = {"similarity": len(result) > 0, "similar_images": result}
     return JSONResponse(content=output_dict)
 
+
+# 5. Run the API with uvicorn
+#    Will run on http://127.0.0.1:8000
 if __name__ == '__main__':
     uvicorn.run(app, host='127.0.0.1', port=8000)
