@@ -65,7 +65,6 @@ def are_images_similar(url_list1, url_list2):
 
 @app.post('/similarityCheck')
 def similarity_check(data: Similarity):
-    data = data.dict()
     inp_imgs = data.inpImg
     pro_urls = data.proImg
 
