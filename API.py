@@ -7,5 +7,5 @@ Created on Sun May 14 02:12:51 2023
 
 from pydantic import BaseModel
 class Similarity(BaseModel):
-    inpImg: list[bytes]
+    inpImg: list[str]
     proImg: list[str]
